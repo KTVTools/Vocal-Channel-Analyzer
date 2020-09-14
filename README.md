@@ -3,6 +3,7 @@
 
 本程式利用 Spleeter 分離出人聲之後,
 幫忙分析出 KTV 檔案中人聲所在的聲道.
+
 本程式需要的環境 :
 - python 執行環境
 - spleeter 與其所需的套裝軟體
@@ -10,6 +11,7 @@
 
 執行主 UI 程式之後, 設定的畫面如下 :
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-1.png)
+
 
 [來源目錄]: 指定待處理影片所在目錄
 
@@ -27,7 +29,7 @@
 目前支援的檔案附加檔名, 有 mpg, mpeg, vob, mkv, avi, dat 幾種.
 若是沒有定義到想支援的檔名, 請自行修改 main_ui.py 中的定義 :
 
-  # define the file extension type to process
+  \# define the file extension type to process
   ext_list = [".mpg", ".mpeg", ".vob", ".mkv", ".avi", ".dat"]
 
 ------------------------------------------

@@ -27,9 +27,10 @@
 目前支援的檔案附加檔名, 有 mpg, mpeg, vob, mkv, avi, dat 幾種.
 若是沒有定義到想支援的檔名, 請自行修改 main_ui.py 中的定義 :
 
-  ```\# define the file extension type to process 
-  ext_list = [".mpg", ".mpeg", ".vob", ".mkv", ".avi", ".dat"]```
-
+```python
+  \# define the file extension type to process 
+  ext_list = [".mpg", ".mpeg", ".vob", ".mkv", ".avi", ".dat"]
+```
 ------------------------------------------
 整合包的製作步驟 :
 1. 下載 portable python 3.7 (https://sourceforge.net/projects/portable-python/)

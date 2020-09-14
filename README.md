@@ -21,6 +21,8 @@
 如果是在比較舊的 CPU(Intel Sandybridge 之前的版本),沒有 AVX support,
 需要再找只有 SSE support 的 tensorflow 版本, 取代掉
 Python/Libs/site-packages 下 tensor 開頭的幾個目錄,
+
 可以到 https://github.com/fo40225/tensorflow-windows-wheel 下載 SSE 版
 還是建議用快一點的 CPU 及較多記憶體來執行,
+
 在 AMD Ryzen 5-3600 上執行, 處理 5 首歌曲大概需 3 分鐘 

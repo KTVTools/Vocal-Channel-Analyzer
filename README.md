@@ -10,8 +10,11 @@
 
 執行主 UI 程式之後, 設定的畫面如下 :
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-1.png)
+
 [來源目錄]: 指定待處理影片所在目錄
+
 [暫存檔目錄]: 指定處理影片時,暫存檔使用的目錄,若指定於 ramdisk,可以避免硬碟存取, 至少要有 500MB 可使用空間
+
 [不處理已有_vL_vR檔案]: 若檔名已經有 _vL 或 _vR 的識別字串, 就不再處理這檔案
 
 掃描過的結果, 可以將 _vL, _vR 的字串直接修改到硬碟上的檔名, 或者將改檔名的動作,
@@ -21,12 +24,11 @@
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-2.png)
 
 # 支援的檔案類型
--------------------------------------
 目前支援的檔案附加檔名, 有 mpg, mpeg, vob, mkv, avi, dat 幾種.
 若是沒有定義到想支援的檔名, 請自行修改 main_ui.py 中的定義 :
 
-# define the file extension type to process
-ext_list = [".mpg", ".mpeg", ".vob", ".mkv", ".avi", ".dat"]
+  # define the file extension type to process
+  ext_list = [".mpg", ".mpeg", ".vob", ".mkv", ".avi", ".dat"]
 
 ------------------------------------------
 整合包的製作步驟 :

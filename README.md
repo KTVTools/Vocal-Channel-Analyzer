@@ -44,8 +44,8 @@
     3. 在 console 畫面中執行 "python -m pip install --upgrade pip" 更新 pip
     4. 接著執行 "python -m pip install spleeter" 安裝 spleeter
     5. 到 App 目錄下, copy mediainfo.exe, ffmpeg.exe, ffprobe.exe 這三個執行檔到此目錄
-    mediainfo 從 https://mediaarea.net/en/MediaInfo/Download/Windows 下載 CLI 版本
-    ffmpeg/ffprobe 從  https://ffmpeg.org/download.html 下載 windows 版本
+        mediainfo 從 https://mediaarea.net/en/MediaInfo/Download/Windows 下載 CLI 版本
+        ffmpeg/ffprobe 從  https://ffmpeg.org/download.html 下載 windows 版本
     6. 從本計畫中 copy main_ui.py, vocal_ch_analyzer.py 到 App 目錄下
 
 如果是在比較舊的 CPU(Intel Sandybridge 之前的版本),沒有 AVX support,

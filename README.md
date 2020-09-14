@@ -25,10 +25,10 @@
 
 # 支援的檔案類型
 目前支援的檔案附加檔名, 有 mpg, mpeg, vob, mkv, avi, dat 幾種.
-若是沒有定義到想支援的檔名, 請自行修改 main_ui.py 中的定義 :
+若是沒有定義到想支援的檔名, 請自行修改 ***main_ui.py*** 中的定義 :
 
 ```python
-  \# define the file extension type to process 
+  # define the file extension type to process 
   ext_list = [".mpg", ".mpeg", ".vob", ".mkv", ".avi", ".dat"]
 ```
 ------------------------------------------

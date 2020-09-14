@@ -36,6 +36,7 @@
 ```
 ------------------------------------------
 整合包的製作步驟 :
+
     1. 下載 portable python 3.7 (https://sourceforge.net/projects/portable-python/)
     2. 解壓後, 執行 Console-Launcher.exe 來安裝需要的模組
     3. 在 console 畫面中執行 "python -m pip install --upgrade pip" 更新 pip

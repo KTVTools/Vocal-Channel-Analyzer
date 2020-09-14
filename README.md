@@ -11,8 +11,6 @@
 
 執行主 UI 程式之後, 設定的畫面如下 :
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-1.png)
-
-
 [來源目錄]: 指定待處理影片所在目錄
 
 [暫存檔目錄]: 指定處理影片時,暫存檔使用的目錄,若指定於 ramdisk,可以避免硬碟存取, 至少要有 500MB 可使用空間
@@ -30,6 +28,7 @@
 若是沒有定義到想支援的檔名, 請自行修改 main_ui.py 中的定義 :
 
   \# define the file extension type to process
+  
   ext_list = [".mpg", ".mpeg", ".vob", ".mkv", ".avi", ".dat"]
 
 ------------------------------------------

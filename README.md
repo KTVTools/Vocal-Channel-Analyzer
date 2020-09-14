@@ -11,6 +11,7 @@
 
 執行主 UI 程式之後, 設定的畫面如下 :
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-1.png)
+
     [來源目錄]: 指定待處理影片所在目錄
     [暫存檔目錄]: 指定處理影片時,暫存檔使用的目錄,若指定於 ramdisk,可以避免硬碟存取, 至少要有 500MB 可使用空間
     [不處理已有_vL_vR檔案]: 若檔名已經有 _vL 或 _vR 的識別字串, 就不再處理這檔案

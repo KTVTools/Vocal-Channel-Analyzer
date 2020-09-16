@@ -15,14 +15,14 @@
 - spleeter 與其所需的套裝軟體
 - MediaInfo 程式與 ffmpeg/ffprobe 程式幫忙分析與處理 audio 檔案
     
-`安裝的方式有幾種 :`
-`1. 若在 Windows 7/10 的環境中, `
-`可以下載 [安裝包](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/releases/download/v1.0.0/vocal_ch_analyzer.zip)`
+安裝的方式有幾種 :
+1. 若在 Windows 7/10 的環境中,  
+可以下載 [安裝包](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/releases/download/v1.0.0/vocal_ch_analyzer.zip)  
      
-`解開 vocal_ch_analyzer.zip 之後, 執行裏頭的`
-`vocal_ch_analyzer.wsf 檔案即可.`
-`或者開啟命令視窗, 在解開的目錄中,`
-`執行 python\python.exe main_ui.py`
+解開 vocal_ch_analyzer.zip 之後, 執行裏頭的  
+vocal_ch_analyzer.wsf 檔案即可.  
+或者開啟命令視窗, 在解開的目錄中,  
+執行 python\python.exe main_ui.py  
     
     2. 如果電腦系統中已經有 python 執行環境,
        請安裝好 Spleeter 套件,

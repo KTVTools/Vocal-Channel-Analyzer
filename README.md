@@ -1,10 +1,10 @@
 # Vocal Channel Analyzer
 ------------------------------
 
-    本程式最主要利用 Spleeter 分離人聲的功能,
-    幫忙分析出 KTV 檔案中人聲所在的聲道,
-    再將分析結果, 把 _vL, _vR 的字串到檔名最後,
-    讓 KTV 加歌程式可以透過檔名判斷出人聲的音軌
+本程式最主要利用 Spleeter 分離人聲的功能,  
+幫忙分析出 KTV 檔案中人聲所在的聲道, 
+再將分析結果, 把 _vL, _vR 的字串到檔名最後,  
+讓 KTV 加歌程式可以透過檔名判斷出人聲的音軌  
 
 
 ### 安裝說明
@@ -17,38 +17,38 @@
     
 安裝的方式有幾種 :
 1. 若在 Windows 7/10 的環境中,  
-可以下載 [安裝包](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/releases/download/v1.0.0/vocal_ch_analyzer.zip)  
+  可以下載 [安裝包](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/releases/download/v1.0.0/vocal_ch_analyzer.zip)  
      
-解開 vocal_ch_analyzer.zip 之後, 執行裏頭的  
-vocal_ch_analyzer.wsf 檔案即可.  
-或者開啟命令視窗, 在解開的目錄中,  
-執行 python\python.exe main_ui.py  
+  解開 vocal_ch_analyzer.zip 之後, 執行裏頭的  
+  vocal_ch_analyzer.wsf 檔案即可.  
+  或者開啟命令視窗, 在解開的目錄中,  
+  執行 python\python.exe main_ui.py  
     
-    2. 如果電腦系統中已經有 python 執行環境,
-       請安裝好 Spleeter 套件,
-       並且將 mediainfo 與 ffmpeg/ffprobe 放在執行的目錄中.
-       接下來從本專案將 main_ui.py 與 analyzer_core.py 下載到執行目錄,
-       只要執行 python main_ui.py 就可以啟動程式
-       (若 spleeter 無法正確被呼叫, 或者在 Linux 環境執行, 
-        請修改 analyzer_core.py 中 spleeter 執行的命令字串)
+2. 如果電腦系統中已經有 python 執行環境,  
+  請安裝好 Spleeter 套件,  
+  並且將 mediainfo 與 ffmpeg/ffprobe 放在執行的目錄中.  
+  接下來從本專案將 main_ui.py 與 analyzer_core.py 下載到執行目錄,  
+  只要執行 python main_ui.py 就可以啟動程式  
+  (若 spleeter 無法正確被呼叫, 或者在 Linux 環境執行,  
+   請修改 analyzer_core.py 中 spleeter 執行的命令字串)  
         
      
 ### 使用說明
 ----------------------------
 
-可以執行發行包中的 *vocal_analyzer.wsf* 或 *vocal_analyzer.bat*,
-或者在命令視窗下執行 *python\python.exe main_ui.py* 程式之後, 設定的畫面如下 :
+可以執行發行包中的 *vocal_analyzer.wsf* 或 *vocal_analyzer.bat*,  
+或者在命令視窗下執行 *python\python.exe main_ui.py* 程式之後, 設定的畫面如下 :  
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-1.png)
 
-    [來源目錄]: 指定待處理影片所在目錄
-    [暫存檔目錄]: 指定處理影片時,暫存檔使用的目錄,若指定於 ramdisk,可以避免硬碟存取, 至少要有 500MB 可使用空間
-    [人聲字串指定] : 指定判斷出人聲的聲道後, 要加到檔名後的辨識字串, 一般左聲道(第一音軌)是指定 _vL(_VL),
-                    右聲道(第二音軌)是指定 _vR(_VR), 若有其他原因, 請自行更改選項
-    [不處理已有_vL_vR檔案]: 若檔名已經有 _vL 或 _vR 的識別字串, 就不再處理這檔案
+[來源目錄]: 指定待處理影片所在目錄  
+[暫存檔目錄]: 指定處理影片時,暫存檔使用的目錄,若指定於 ramdisk,可以避免硬碟存取, 至少要有 500MB 可使用空間  
+[人聲字串指定] : 指定判斷出人聲的聲道後, 要加到檔名後的辨識字串, 一般左聲道(第一音軌)是指定 _vL(_VL),  
+                右聲道(第二音軌)是指定 _vR(_VR), 若有其他原因, 請自行更改選項  
+[不處理已有_vL_vR檔案]: 若檔名已經有 _vL 或 _vR 的識別字串, 就不再處理這檔案  
 
-    分析人聲過的結果, 可以將 _vL, _vR 的字串
-    - 直接修改到硬碟上的檔名, 
-    - 將改檔名的動作,儲存到一個 .bat 的批次檔, 讓使用者先審閱過之後, 再自行開個命令視窗, 執行 .bat 檔案
+分析人聲過的結果, 可以將 _vL, _vR 的字串  
+- 直接修改到硬碟上的檔名,   
+- 將改檔名的動作,儲存到一個 .bat 的批次檔, 讓使用者先審閱過之後, 再自行開個命令視窗, 執行 .bat 檔案  
 
 執行掃描的畫面如下 :
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-2.png)

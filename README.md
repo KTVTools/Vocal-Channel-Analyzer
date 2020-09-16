@@ -2,8 +2,8 @@
 ------------------------------
 
 本程式最主要利用 Spleeter 分離人聲的功能,  
-幫忙分析出 KTV 檔案中人聲所在的聲道, 
-再將分析結果, 把 _vL, _vR 的字串到檔名最後,  
+幫忙分析出 KTV 檔案中人聲所在的聲道,  
+再將分析結果, 把 _vL, _vR 的字串加到檔名最後,  
 讓 KTV 加歌程式可以透過檔名判斷出人聲的音軌  
 
 
@@ -54,7 +54,8 @@
 啟動分析的畫面如下 :
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-2.png)
 
-按了 [開始] 按鈕之後, 就開始分析來源目錄下,所有附加檔名符合定義的檔案
+按了 [開始] 按鈕之後, 就開始分析來源目錄下,所有附加檔名符合定義的檔案, 分析的結果,  
+根據設定中的選擇, 直接修改檔案檔名, 或者將改檔名的指令都匯集到 .bat 的輸出檔中
 
 ### 支援的檔案類型
 目前支援的檔案附加檔名, 有 mpg, mpeg, vob, mkv, avi, dat 幾種.
@@ -79,16 +80,16 @@
         ffmpeg/ffprobe 從  https://ffmpeg.org/download.html 下載 windows 版本
     6. 從本計畫中 copy main_ui.py, vocal_ch_analyzer.py 到 App 目錄下
 
-目前安裝包裏頭, 安裝的是支援 AVX 版本的 tensorflow,
-如果是在比較舊的 CPU(Intel Sandybridge 之前的版本),沒有 AVX support, 跑起來會有錯誤.
-需要再找只有 SSE support 的 tensorflow 版本, 取代掉
-Python/Libs/site-packages 下 tensor 開頭的幾個目錄,
-若是有顯示卡加速, 也可以安裝支援 GPU 版本的 tensorflow, 應該可以加速許多
+目前安裝包裏頭, 安裝的是支援 AVX 版本的 tensorflow,  
+如果是在比較舊的 CPU(Intel Sandybridge 之前的版本),沒有 AVX support, 跑起來會有錯誤.  
+需要再找只有 SSE support 的 tensorflow 版本, 取代掉  
+Python/Libs/site-packages 下 tensor 開頭的幾個目錄,  
+若是有顯示卡加速, 也可以安裝支援 GPU 版本的 tensorflow, 應該可以加速許多  
 
-可以到 https://github.com/fo40225/tensorflow-windows-wheel 其他版本的 tensorflow,
+可以到 https://github.com/fo40225/tensorflow-windows-wheel 其他版本的 tensorflow,  
 基本上使用 Spleeter 需要用比較快的 CPU 與較大的記憶體(最好有 8GB)
 
-在 AMD Ryzen 5-3600 上執行, 處理一首歌曲大概需 35 秒  
+在 AMD Ryzen 5-3600 上執行, 處理一首歌曲大概需 35 秒   
 在 Intel i3-540(第一代 Core CPU, 只有支援 SSE), 處理一首歌曲大概需要 230 秒 
 
 ---------------------------------------

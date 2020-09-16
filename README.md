@@ -10,10 +10,10 @@
 ### 安裝說明
 ----------------------------
 
-本程式需要的環境 :
-- python 執行環境
-- spleeter 與其所需的套裝軟體
-- MediaInfo 程式與 ffmpeg/ffprobe 程式幫忙分析與處理 audio 檔案
+    本程式需要的環境 :
+    - python 執行環境
+    - spleeter 與其所需的套裝軟體
+    - MediaInfo 程式與 ffmpeg/ffprobe 程式幫忙分析與處理 audio 檔案
     
     安裝的方式有幾種 :
     1. 若在 Windows 7/10 的環境中, 

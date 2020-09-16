@@ -1,3 +1,7 @@
+#
+#  main_ui.py
+#  The main UI part for vocal channel analyzer
+#  version : 1.0.0   2020/09/15
 #======================
 # imports
 #======================
@@ -20,10 +24,13 @@ import pandas as pd
 from io import StringIO
 import sqlite3
 import math
-import vocal_ch_analyzer
+import analyzer_core
+
+VERSION_INFO='1.0.0'
+DATE_INFO='2020/09/15'
 
 # define the file extension type to process
-ext_list = [".mpg", ".mpeg", ".vob", ".mkv"]
+ext_list = [".mpg", ".mpeg", ".vob", ".mkv", ".avi", ".dat"]
 
 
 # define appending string for [VCD vocal, VCD kara, DVD vocal, DVD kara], default is 4
@@ -49,7 +56,7 @@ VL_STR=[['_vL', '_vR', '_vL', '_vR'],
 win = tk.Tk()   
 
 # Add a title       
-win.title("Vocal Channel Determination")  
+win.title("Vocal Channel Analyzer")  
 
 tabControl = ttk.Notebook(win)          # Create Tab Control
 
@@ -190,17 +197,13 @@ def progressbar_reset():
     status_line_l.configure(text='idle')
     progress_b["value"]=0
     progress_b.update()
-
-def Run_Analyze(dirpath, fileitem, tmpdir, outf_hd, vl_str):
-    return vocal_ch_analyzer.vocal_analyze(dirpath, fileitem, tmpdir, outf_hd, vl_str)
-
     
 def StartCMD():
     startbtn.configure(state='disabled')
     run_state.set(STATE_RUN)
     stopbtn.configure(state='normal')
     pausebtn.configure(state='normal')
-    # freeze the current setting, so the value will not be changed if users change UI 
+    # freeze the current setting, so the value will not be changed when UI changes
     Fsrcdir=filedir.get()
     Ftmpdir=tempdir.get()
     Fbatfilename=outfilename.get()
@@ -213,9 +216,10 @@ def StartCMD():
         Foutf_hd=open(Fbatfilename, "wt", encoding="utf8")
         print("chcp 65001\n", file=Foutf_hd)
         
-    print(filedir.get(), tempdir.get(), outfilename.get(), SkipFileEn.get(), VL_STR[monoVar.get()+multiVar.get()*4])
+    #print(filedir.get(), tempdir.get(), outfilename.get(), SkipFileEn.get(), VL_STR[monoVar.get()+multiVar.get()*4])
     total_items=0
     logarea.delete('1.0', tk.END)   # clear text area
+    # count the total files to process 
     for dirpath, dirlist, filelist in os.walk(Fsrcdir):
         for fileitem in filelist:
             fullpath=os.path.join(dirpath, fileitem)
@@ -250,14 +254,21 @@ def StartCMD():
                         if ((fileitem.lower().find('_vl')>=0) or (fileitem.lower().find('_vr')>=0)):
                             # skip enabled and filename has _vl or _vr
                             progressbar_update('skipping '+fileitem, cur_item*100/total_items)
-                            logarea.insert(tk.END, 'skipping '+filename+'\n')
+                            logarea.insert(tk.END, 'skipping '+fileitem+'\n')
                             if Foutf_hd!=None:
-                                print("REM skipping "+filename+'\n', file=Foutf_hd)
+                                print("REM skipping "+fileitem+'\n', file=Foutf_hd)
                             continue
                     progressbar_update('processing '+fileitem, cur_item*100/total_items)
-                    logarea.insert(tk.END, 'processing '+fileitem+'\n')
-                    if (Run_Analyze(dirpath, fileitem, Ftmpdir, Foutf_hd, Fvl_str)!=0):
-                        logarea.insert(tk.END, 'error on '+filename+'\n')
+                    result=analyzer_core.vocal_analyze(fullpath, Ftmpdir, Fvl_str)
+                    if result=='':
+                        logarea.insert(tk.END, 'error on "'+fileitem+'"\n')
+                    else:
+                        logarea.insert(tk.END, 'processed "'+fileitem+'" ='+result+'\n')
+                        newfilename=filename+result+fileext
+                        if Foutf_hd != None:   # output ren command to .bat file     
+                            print('ren "'+fullpath.replace('/','\\')+'" "'+newfilename+'"', file=Foutf_hd)
+                        else:    # directly change file name
+                            analyzer_core.rename_file(fullpath, newfilename)
                 
     startbtn.configure(state='normal')
     stopbtn.configure(state='disabled')
@@ -336,7 +347,7 @@ menu_bar.add_cascade(label="File", menu=file_menu)
 
 # Display a Message Box
 def _msgBox():
-    msg.showinfo('Vocal Channel determination', 'This program will determine the vocal channel\nof the audio file')  
+    msg.showinfo('Vocal Channel Analyzer', '版本 :'+VERSION_INFO+'\n日期 :'+DATE_INFO+'\n')  
 
 def help_Box():
     msg.showinfo('使用說明',\
@@ -345,14 +356,15 @@ def help_Box():
                  '   +----------+\n'+\
                  '[來源目錄]: 指定待處理影片所在目錄\n'+\
                  '[暫存檔目錄]: 指定處理影片時,暫存檔使用的目錄\n'+\
-                 '              若指定於 ramdisk, 至少要有 500MB 可使用空間\n\n'+\
+                 '              若指定於 ramdisk, 建議要有 500MB 可使用空間\n\n'+\
                  '   +--------------+\n'+\
                  '     人聲字串指定  \n'+\
                  '   +--------------+\n'+\
                  '  針對單音軌(左右聲道)與多重音軌(第一第二音軌)\n'+\
                  '  偵測出人聲的聲道後,加入檔名的字串定義\n'+\
-                 '  通常單音軌左聲道為人聲, 使用字串 _vL, 多重音軌第一軌人聲, 使用 _VL\n'+\
-                 '  若有特殊原因需要更改定義, 再自行勾選不同字串\n\n'+\
+                 '  建議單音軌左聲道為人聲, 使用字串 _vL, 多重音軌第一軌人聲, 使用 _VL\n'+\
+                 '  就可以用字串來辨別是單音軌或多音軌,\n'+\
+                 '  若有特殊原因需要更改定義, 請自行勾選不同字串\n\n'+\
                  '   +----------+\n'+\
                  '     輸出設定 \n'+\
                  '   +----------+\n'+\
@@ -360,7 +372,9 @@ def help_Box():
                  '                        就不再處理這檔案\n'+\
                  '[判斷的結果直接修改檔名]:若選擇此選項,處理後的結果會將_vL _vR 字串\n'+\
                  '                        直接更新到檔案.\n'+\
-                 '[判斷結果改輸出到BAT檔案]:若上方選項不選,則可以指定一個 .bat 檔案當輸出\n')
+                 '[判斷結果改輸出到BAT檔案]:若上方選項不選,則可以指定一個 .bat 檔案,\n'+\
+                 '                        將所有更改檔名動作都輸出到此 .bat 檔,\n'+\
+                 '                        讓使用者再自行執行 .bat 檔案更改檔名\n')
                  
 # Add another Menu to the Menu Bar and an item
 help_menu = Menu(menu_bar, tearoff=0)

@@ -1,35 +1,19 @@
 #
-# This program will convert mpg(vob) file into mkv file.
-# Voice channel and replaygain will also be calculated
-# and added to the file name.
-# The volume will be adjusted if the volume level too small
+# analyzer_core.py
+# This module provide the analysis core of the voice channel
 # 
-
+# version : 1.0.0  2020/09/15
 
 import os
 import subprocess
 from math import log10
 
-# put ffmpeg.exe, mediainfo.exe in c:/Users/username directory for the
+# put ffmpeg.exe, mediainfo.exe in the same directory for the
 # program to find. Spleeter package must be installed properly too.
 
 ffmpegcmd="ffmpeg.exe"
 mediainfocmd="mediainfo.exe"
 spleetercmd="python\python.exe -m spleeter separate "
-
-#scan_dir="E:\KTVtemp\KTVVOB"
-#tmp_dir="r:"
-
-# define the output audio bitrate if volume adjustment is required
-#mp3_bitrate='192k'
-#crf_str='21'
-
-# define the replaygain threadhold, if replaygain is larger than this, adjust volume
-# THRESHOLD=6 is about 2 times volume, THRESHOLD=8 is about 2.5 times volume
-#GAIN_THRESHOLD=6.0
-#VOL_BASELINE=40
-
-#ext_list = [".mpg", ".mpeg", ".vob"]
 
 def read_mediainfo(filename):
     cmdlist=mediainfocmd+' "'+filename+'"'
@@ -44,7 +28,10 @@ def read_mediainfo(filename):
     n_pos = str(result).find('Format', s_pos)
     m_pos = str(result).find(':', n_pos)
     p_pos = str(result).find('\n', m_pos)
-    vid_format = str(result)[m_pos+1:p_pos].strip()
+    try:
+        vid_format = str(result)[m_pos+1:p_pos].strip()
+    except:
+        return[0, '', 0, '', 0]     # error condition
     
     if vid_format=='MPEG Video':
         n_pos = str(result).find('Format version', s_pos)
@@ -57,11 +44,14 @@ def read_mediainfo(filename):
             mpeg_format=2   # MPEG2
     else:
         mpeg_format=0    # not MPEG format
-#    print("vid format, ver :", vid_format, ver_format)
+
     s_pos = str(result).find('Scan type')
     n_pos = str(result).find(':', s_pos)
     m_pos = str(result).find('\n',n_pos+1)
-    scan_type=str(result)[n_pos+1:m_pos].strip()
+    try:
+        scan_type=str(result)[n_pos+1:m_pos].strip()
+    except:
+        return[0, '', 0, '', 0]     # error condition
     
     audio_no = str(result).count('\r\nAudio')
     
@@ -69,23 +59,24 @@ def read_mediainfo(filename):
     n_pos = str(result).find('Format', s_pos)
     m_pos = str(result).find(':', n_pos)
     p_pos = str(result).find('\n', m_pos)
-    audio_format=str(result)[m_pos+1:p_pos].strip()
+    try:
+        audio_format=str(result)[m_pos+1:p_pos].strip()
+    except:
+        return[0, '', 0, '', 0]     # error condition
     
     s_pos = str(result).find('Channel', p_pos)
     n_pos = str(result).find(':', s_pos)
     m_pos = str(result).find('ch', n_pos)
-    channel_no=int(str(result)[n_pos+1:m_pos-1].strip())
+    try:
+        channel_no=int(str(result)[n_pos+1:m_pos-1].strip())
+    except:
+        return[0, '', 0, '', 0]    # error condition
     # return parameters :
     # scan_type : "Progressive" or "Interlaced"
+    # audio_no : audio streams in the file
     # audio_format : "AC-3" "mp2" "mp3" or "PCM"
-    # channel_no : 2 or 6
+    # channel_no : audio channel number in audio stream
     return [mpeg_format, scan_type, audio_no, audio_format, channel_no]
-
-#def db_to_val(db):
-#    return(10.0**(db/20.0))
-
-#def val_to_db(val):
-#    return(log10(val)*20.0)
 
 
 def generate_audio_files(infile, audio_no, tmp_dir):
@@ -107,39 +98,6 @@ def generate_audio_files(infile, audio_no, tmp_dir):
             '" -filter_complex "[0:a:1]pan=stereo|c0=FL|c1=FR[out]" -map "[out]" -y "'+\
             tmp_dir+'/ch1.wav"'
         run_cmd(cmdlist, "error on generate ch1.wav :"+cmdlist)
-
-def calculate_tmp_dir_replaygain():
-    cmdlist=ffmpegcmd+' -i "'+tmp_dir+'/ch0.wav" -af replaygain -f null nul'        
-    try:
-        result = subprocess.check_output(cmdlist, shell=True, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-        print("error on tmp_dir replaygain0:", cmdlist)
-        return[0.0, 0.0, 0.0, 0.0]
-    res=str(result)[-200:].replace('\\n','\n').replace('\\r','\r')
-    
-    gain_str = res.find('track_gain')
-    db_str = res.find('dB', gain_str)
-    ch0_db = float(res[gain_str+13:db_str-1])
-    peak_str = res.find('track_peak', db_str)
-    ch0_peak = float(res[peak_str+13:-1].rstrip())
-      
-    cmdlist=ffmpegcmd+' -i "'+tmp_dir+'/ch1.wav" -af replaygain -f null nul'        
-    try:
-        result = subprocess.check_output(cmdlist, shell=True, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-        print("error on tmp_dir replaygain1:", cmdlist)
-        return[0.0, 0.0, 0.0, 0.0]
-    res=str(result)[-200:].replace('\\n','\n').replace('\\r','\r')
-    gain_str = res.find('track_gain')
-    db_str = res.find('dB', gain_str)
-    ch1_db = float(res[gain_str+13:db_str-1]) 
-    peak_str = res.find('track_peak', db_str)
-    ch1_peak = float(res[peak_str+13:-1].rstrip())
-    
-    return[ch0_db, ch1_db, ch0_peak, ch1_peak]
-    
-        
-
 
 def run_cmd(cmdstr, errorstr):
     try:
@@ -199,12 +157,6 @@ def remove_tmp_dir_audiofiles(tmp_dir):
     remove_file(tmp_dir+'/ch0.wav')
     remove_file(tmp_dir+'/ch1.wav')
     
-def remove_tmp_dir_files(tmp_dir):    
-    tmplist=tmp_dir+'/*.*'
-    cmdlist=tmplist.replace('/','\\')
-    cmdlist='del /S /Q "'+cmdlist+'"'
-    run_cmd(cmdlist, "error on del files:"+cmdlist)
-
 def rename_file(orgfile, newfile):
     tmplist='ren "'+orgfile+'" "'+newfile+'"'
     cmdlist=tmplist.replace('/','\\')
@@ -214,20 +166,25 @@ def remove_file(infile):
     tmplist='del "'+infile+'"'
     cmdlist=tmplist.replace('/','\\')
     run_cmd(cmdlist, "error on remove file:"+cmdlist)
-                    
-def vocal_analyze(dirpath, fileitem, tmpdir, outf_hd, vl_str):
-    fullpath=os.path.join(dirpath, fileitem)
-    filename, fileext = os.path.splitext(fileitem)
+
+# analyze the vocal channel
+# fullpath : the source file path
+# tmpdir : directory for audio temp files during analysis
+# vl_str : _VL_VR string 
+# output : '' when error, _VL_VR string if analysis ok
+def vocal_analyze(fullpath, tmpdir, vl_str):
+#    fullpath=os.path.join(dirpath, fileitem)
+#    filename, fileext = os.path.splitext(fileitem)
     [mpeg_format, interlace_str, audio_no, audio_format, audio_ch]=read_mediainfo(fullpath)
     if audio_no==0:
         print("no audio stream in ",fullpath)
-        return 1
+        return ''
     generate_audio_files(fullpath, audio_no, tmpdir)
     [ch0_v_gn, ch1_v_gn] = calculate_vocal_gain(tmpdir)
     remove_tmp_dir_audiofiles(tmpdir)
     if (ch0_v_gn==0.0) or (ch1_v_gn==0.0):
         print("error on getting vocal replaygain", fullpath)
-        return 1
+        return ''
     if (ch0_v_gn>ch1_v_gn):  # vl_str contains [VCD_VL, VCD_VR, DVD_VL, DVD_VR] string
         if (audio_no==1):  #  channel 1 voice is louder, _VR
             ch_str=vl_str[1]  # VCD_VR
@@ -238,9 +195,4 @@ def vocal_analyze(dirpath, fileitem, tmpdir, outf_hd, vl_str):
             ch_str=vl_str[0]  # VCD_VL
         else:
             ch_str=vl_str[2]  # DVD_VL
-    outfilename=filename+ch_str+fileext
-    if outf_hd != None:        
-        print('ren "'+fullpath.replace('/','\\')+'" "'+outfilename+'"', file=outf_hd)
-    else:
-        rename_file(fullpath, outfilename)
-    return 0
+    return ch_str

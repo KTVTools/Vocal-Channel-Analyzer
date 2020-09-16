@@ -1,14 +1,32 @@
 ### Vocal Channel Analyzer
 ------------------------------
 
-    本程式利用 Spleeter 分離出人聲之後,
-    幫忙分析出 KTV 檔案中人聲所在的聲道.
+    本程式最主要利用 Spleeter 分離人聲的功能,
+    幫忙分析出 KTV 檔案中人聲所在的聲道,
+    再將分析結果, 把 _vL, _vR 的字串到檔名最後,
+    讓 KTV 加歌程式可以透過檔名判斷出人聲的音軌
+
+
+# 安裝說明
+----------------------------
 
     本程式需要的環境 :
     - python 執行環境
     - spleeter 與其所需的套裝軟體
-    - mediainfo 程式與 ffmpeg/ffprobe 程式幫忙分析與處理 audio 檔案
+    - MediaInfo 程式與 ffmpeg/ffprobe 程式幫忙分析與處理 audio 檔案
     
+    安裝的方式有幾種 :
+    1. 若在 Windows 7/10 的環境中, 可以下載 [安裝包]: https://github.com/ericpeng1968/Vocal-Channel-Analyzer/releases/download/v1.0.0/vocal_ch_analyzer.zip "安裝包"
+    
+    2. 如果電腦系統中已經有 python 執行環境,
+       請安裝好 Spleeter 套件,
+       並且將 mediainfo 與 ffmpeg/ffprobe 放在執行的目錄中.
+       接下來從本專案將 main_ui.py 與 analyzer_core.py 下載到執行目錄,
+       只要執行 python main_ui.py 就可以啟動程式
+       (若 spleeter 無法正確被呼叫, 或者在 Linux 環境執行, 
+        請修改 analyzer_core.py 中 spleeter 執行的命令字串)
+        
+     
 # 使用說明
 ----------------------------
 

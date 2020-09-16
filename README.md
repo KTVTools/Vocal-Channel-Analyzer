@@ -19,24 +19,23 @@
 1. 若在 Windows 7/10 的環境中,  
   可以下載 [安裝包](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/releases/download/v1.0.0/vocal_ch_analyzer.zip)       
   解開 vocal_ch_analyzer.zip 之後, 執行裏頭的  
-  vocal_ch_analyzer.wsf 檔案即可.  
+  **vocal_ch_analyzer.wsf** 檔案即可.  
   或者開啟命令視窗, 在解開的目錄中,  
-  執行 python\python.exe main_ui.py  
+  執行 **python\python.exe main_ui.py**  
     
 2. 如果電腦系統中已經有 python 執行環境,  
   請安裝好 Spleeter 套件,  
   並且將 mediainfo 與 ffmpeg/ffprobe 放在執行的目錄中.  
   接下來從本專案將 main_ui.py 與 analyzer_core.py 下載到執行目錄,  
-  只要執行 python main_ui.py 就可以啟動程式  
+  只要執行 **python main_ui.py** 就可以啟動程式  
   (若 spleeter 無法正確被呼叫, 或者在 Linux 環境執行,  
-   請修改 analyzer_core.py 中 spleeter 執行的命令字串)  
+   請修改 analyzer_core.py 中 spleeter 等命令的執行字串)  
         
      
 ### 使用說明
 ----------------------------
 
-可以執行發行包中的 *vocal_analyzer.wsf* 或 *vocal_analyzer.bat*,  
-或者在命令視窗下執行 *python\python.exe main_ui.py* 程式之後, 設定的畫面如下 :  
+執行程式之後, 設定的畫面如下 :  
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-1.png)
 
 [來源目錄]: 指定待處理影片所在目錄  
@@ -52,7 +51,7 @@
 - 直接修改到硬碟上的檔名,   
 - 將改檔名的動作,儲存到一個 .bat 的批次檔, 讓使用者先審閱過之後, 再自行開個命令視窗, 執行 .bat 檔案  
 
-執行掃描的畫面如下 :
+啟動分析的畫面如下 :
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-2.png)
 
 按了 [開始] 按鈕之後, 就開始分析來源目錄下,所有附加檔名符合定義的檔案
@@ -80,16 +79,17 @@
         ffmpeg/ffprobe 從  https://ffmpeg.org/download.html 下載 windows 版本
     6. 從本計畫中 copy main_ui.py, vocal_ch_analyzer.py 到 App 目錄下
 
-如果是在比較舊的 CPU(Intel Sandybridge 之前的版本),沒有 AVX support,
+目前安裝包裏頭, 安裝的是支援 AVX 版本的 tensorflow,
+如果是在比較舊的 CPU(Intel Sandybridge 之前的版本),沒有 AVX support, 跑起來會有錯誤.
 需要再找只有 SSE support 的 tensorflow 版本, 取代掉
 Python/Libs/site-packages 下 tensor 開頭的幾個目錄,
+若是有顯示卡加速, 也可以安裝支援 GPU 版本的 tensorflow, 應該可以加速許多
 
-可以到 https://github.com/fo40225/tensorflow-windows-wheel 下載 SSE 版,
-還是建議用快一點的 CPU 及較多記憶體來執行,
+可以到 https://github.com/fo40225/tensorflow-windows-wheel 其他版本的 tensorflow,
+基本上使用 Spleeter 需要用比較快的 CPU 與較大的記憶體(最好有 8GB)
 
 在 AMD Ryzen 5-3600 上執行, 處理一首歌曲大概需 35 秒  
-在 Intel i3-540(第一代 Core CPU, 只有支援 SSE), 處理一首歌曲大概需要 230 秒
-若有加速顯卡, 也可以包裝支援 GPU 的 tensorflow, 速度應該可以更快 
+在 Intel i3-540(第一代 Core CPU, 只有支援 SSE), 處理一首歌曲大概需要 230 秒 
 
 ---------------------------------------
 理論與方法 :

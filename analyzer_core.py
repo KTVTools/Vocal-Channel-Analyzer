@@ -3,6 +3,8 @@
 # This module provide the analysis core of the voice channel
 # 
 # version : 1.0.0  2020/09/15
+# version : 1.1.0  2002/09/16
+#           add support for audio clipping
 
 import os
 import subprocess
@@ -16,85 +18,57 @@ mediainfocmd="mediainfo.exe"
 spleetercmd="python\python.exe -m spleeter separate "
 
 def read_mediainfo(filename):
-    cmdlist=mediainfocmd+' "'+filename+'"'
+    cmdlist=mediainfocmd+' --output=General;%AudioCount% "'+filename+'"'
     try:
         result = subprocess.check_output(cmdlist, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        return [0, "", ""]
+        return [0, 0]
     
-    result=str(result).replace('\\n','\n').replace('\\r','\r')
-    
-    s_pos = str(result).find('\r\nVideo')
-    n_pos = str(result).find('Format', s_pos)
-    m_pos = str(result).find(':', n_pos)
-    p_pos = str(result).find('\n', m_pos)
+    result=str(result,'utf-8').strip()
     try:
-        vid_format = str(result)[m_pos+1:p_pos].strip()
+        audio_no = int(result)
     except:
-        return[0, '', 0, '', 0]     # error condition
+        return[0, 0]
     
-    if vid_format=='MPEG Video':
-        n_pos = str(result).find('Format version', s_pos)
-        m_pos = str(result).find(':', n_pos)
-        p_pos = str(result).find('\n', m_pos)
-        ver_format = str(result)[m_pos+1:p_pos].strip()
-        if ver_format=='Version 1':
-            mpeg_format=1   # MPEG1
-        else:
-            mpeg_format=2   # MPEG2
-    else:
-        mpeg_format=0    # not MPEG format
-
-    s_pos = str(result).find('Scan type')
-    n_pos = str(result).find(':', s_pos)
-    m_pos = str(result).find('\n',n_pos+1)
+    cmdlist=mediainfocmd+' --output=General;%Duration% "'+filename+'"'
     try:
-        scan_type=str(result)[n_pos+1:m_pos].strip()
-    except:
-        return[0, '', 0, '', 0]     # error condition
+        result = subprocess.check_output(cmdlist, shell=True, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        return [0, 0]
     
-    audio_no = str(result).count('\r\nAudio')
-    
-    s_pos = str(result).find('Audio', m_pos)
-    n_pos = str(result).find('Format', s_pos)
-    m_pos = str(result).find(':', n_pos)
-    p_pos = str(result).find('\n', m_pos)
+    result=str(result,'utf-8').strip()   # return stream length in ms
     try:
-        audio_format=str(result)[m_pos+1:p_pos].strip()
+        audio_len = int(result)/1000     # turn into sec
     except:
-        return[0, '', 0, '', 0]     # error condition
+        return [0, 0]
     
-    s_pos = str(result).find('Channel', p_pos)
-    n_pos = str(result).find(':', s_pos)
-    m_pos = str(result).find('ch', n_pos)
-    try:
-        channel_no=int(str(result)[n_pos+1:m_pos-1].strip())
-    except:
-        return[0, '', 0, '', 0]    # error condition
-    # return parameters :
-    # scan_type : "Progressive" or "Interlaced"
+    # return values :
     # audio_no : audio streams in the file
-    # audio_format : "AC-3" "mp2" "mp3" or "PCM"
-    # channel_no : audio channel number in audio stream
-    return [mpeg_format, scan_type, audio_no, audio_format, channel_no]
+    # audio_len : stream length in seconds
+    return [audio_no, audio_len]
 
 
-def generate_audio_files(infile, audio_no, tmp_dir):
-    if (audio_no==1):  # has only 1 audio
-        cmdlist=ffmpegcmd+' -i "'+infile+\
+def generate_audio_files(infile, audio_no, tmp_dir, c_start, c_duration):
+    if (c_start<0) or (c_duration<0):
+        clip_str=''     # whole song without clipping
+    else:
+        clip_str=" -ss "+str(c_start)+" -t "+str(c_duration)
+
+    if (audio_no==1):  # has only 1 audio stream, turn L/R into CH0, CH1 wav
+        cmdlist=ffmpegcmd+clip_str+' -i "'+infile+\
             '" -filter_complex "[0:a]pan=stereo|c0=c0|c1=c0[out]" -map "[out]" -y "'+\
             tmp_dir+'/ch0.wav"'
         run_cmd(cmdlist, "error on generate ch0.wav :"+cmdlist)
-        cmdlist=ffmpegcmd+' -i "'+infile+\
+        cmdlist=ffmpegcmd+clip_str+' -i "'+infile+\
             '" -filter_complex "[0:a]pan=stereo|c0=c1|c1=c1[out]" -map "[out]" -y "'+\
             tmp_dir+'/ch1.wav"'
         run_cmd(cmdlist, "error on generate ch1.wav :"+cmdlist)
     else:
-        cmdlist=ffmpegcmd+' -i "'+infile+\
+        cmdlist=ffmpegcmd+clip_str+' -i "'+infile+\
             '" -filter_complex "[0:a:0]pan=stereo|c0=FL|c1=FR[out]" -map "[out]" -y "'+\
             tmp_dir+'/ch0.wav"'
         run_cmd(cmdlist, "error on generate ch0.wav :"+cmdlist)
-        cmdlist=ffmpegcmd+' -i "'+infile+\
+        cmdlist=ffmpegcmd+clip_str+' -i "'+infile+\
             '" -filter_complex "[0:a:1]pan=stereo|c0=FL|c1=FR[out]" -map "[out]" -y "'+\
             tmp_dir+'/ch1.wav"'
         run_cmd(cmdlist, "error on generate ch1.wav :"+cmdlist)
@@ -168,18 +142,25 @@ def remove_file(infile):
     run_cmd(cmdlist, "error on remove file:"+cmdlist)
 
 # analyze the vocal channel
-# fullpath : the source file path
-# tmpdir : directory for audio temp files during analysis
-# vl_str : _VL_VR string 
+#   fullpath : the source file path
+#   tmpdir : directory for audio temp files during analysis
+#   vl_str : _VL_VR string 
+#   clip_start : clip starting point
+#   clip_duration : duration of the clip
 # output : '' when error, _VL_VR string if analysis ok
-def vocal_analyze(fullpath, tmpdir, vl_str):
-#    fullpath=os.path.join(dirpath, fileitem)
-#    filename, fileext = os.path.splitext(fileitem)
-    [mpeg_format, interlace_str, audio_no, audio_format, audio_ch]=read_mediainfo(fullpath)
+def vocal_analyze(fullpath, tmpdir, vl_str, clip_start, clip_duration):
+    [audio_no, audio_len]=read_mediainfo(fullpath)
     if audio_no==0:
         print("no audio stream in ",fullpath)
         return ''
-    generate_audio_files(fullpath, audio_no, tmpdir)
+    c_start = int(audio_len * clip_start)
+    c_duration = int(audio_len*clip_duration)
+    if (c_start+c_duration)>audio_len:    # sanity check
+        c_duration = audio_len - c_start
+    if (clip_start==0.0) and (clip_duration==1.0):  # whole song case
+        c_start=-1
+        c_duration=-1
+    generate_audio_files(fullpath, audio_no, tmpdir, c_start, c_duration)
     [ch0_v_gn, ch1_v_gn] = calculate_vocal_gain(tmpdir)
     remove_tmp_dir_audiofiles(tmpdir)
     if (ch0_v_gn==0.0) or (ch1_v_gn==0.0):

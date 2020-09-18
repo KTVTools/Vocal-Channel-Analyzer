@@ -2,6 +2,8 @@
 #  main_ui.py
 #  The main UI part for vocal channel analyzer
 #  version : 1.0.0   2020/09/15
+#  version : 1.1.0   2020/09/16
+#            add feature to choose a clip for analysis to shorten required time
 #======================
 # imports
 #======================
@@ -140,9 +142,56 @@ multiR_Label.grid(column=5, row=3, sticky=tk.W)
 monoR_Label.configure(text='  |  右聲道人聲: '+VL_STR[monoVar.get()+multiVar.get()*4][1])
 multiR_Label.configure(text='  |  第二軌人聲: '+VL_STR[monoVar.get()+multiVar.get()*4][3])
 
+clip_duration_strs=["整首", "1/2首", "1/3首", "1/4首"]
+clip_duration_list=[1.0, 0.5, 0.3333, 0.25]
+clip_start_strs=["從頭", "從1/4處", "從1/3處","從1/2處", "從2/3處", "從3/4處"]
+clip_start_list=[0.0, 0.25, 0.3333, 0.5, 0.6666, 0.75]
+
+# clip setting
+area_clip = ttk.LabelFrame(tab1, text=' 分析區間設定 ')
+area_clip.grid(column=0, row=3, padx=8, pady=4, sticky=tk.W)
+
+def radClipDuration():
+    global clip_duration_val
+    clip_duration_Sel=clip_durationVar.get() 
+    clip_duration_val=clip_duration_list[clip_duration_Sel]
+    for col in range(6):
+        if clip_duration_val+clip_start_list[col]<1.01:
+            startRad[col].configure(state='normal')
+        else:
+            startRad[col].configure(state='disabled')
+    
+def radClipStart():
+    global clip_start_val
+    clip_start_Sel = clip_startVar.get()
+    clip_start_val = clip_start_list[clip_start_Sel]
+
+clip_start_val = clip_start_list[0]
+clip_duration_val = clip_duration_list[0]
+
+ttk.Label(area_clip, text="長度選擇 :").grid(column=0, row=0, sticky=tk.W)
+clip_durationVar = tk.IntVar()
+clip_durationVar.set(0)
+for col in range(4):
+    curRad = tk.Radiobutton(area_clip, text=clip_duration_strs[col], variable=clip_durationVar,
+                            value=col, command=radClipDuration, state='normal')
+    curRad.grid(column=col+1, row=0, sticky=tk.W)
+    
+ttk.Label(area_clip, text="啟始點選擇:").grid(column=0, row=1, sticky=tk.W)
+clip_startVar=tk.IntVar()
+
+startRad=list()
+for col in range(6):
+    startRad.append( tk.Radiobutton(area_clip, text=clip_start_strs[col], variable=clip_startVar,
+                            value=col, command=radClipStart, state='disable'))
+    startRad[col].grid(column=col+1, row=1, sticky=tk.W)
+startRad[0].configure(state='normal') 
+clip_startVar.set(0)
+ 
 # output setting
 area_output = ttk.LabelFrame(tab1, text=' 輸出設定 ')
-area_output.grid(column=0, row=3, padx=8, pady=4, sticky=tk.W)
+area_output.grid(column=0, row=4, padx=8, pady=4, sticky=tk.W)
+
 
 SkipFileEn = tk.IntVar()
 SkipFilecb = tk.Checkbutton(area_output, text="不處理已有_vL_vR檔案", variable=SkipFileEn)
@@ -210,6 +259,8 @@ def StartCMD():
     FSkipFileEn=SkipFileEn.get()
     Fvl_str=VL_STR[monoVar.get()+multiVar.get()*4]
     FModFileEn=ModFileEn.get()
+    Fclip_start=clip_start_val
+    Fclip_duration=clip_duration_val
     if FModFileEn:
         Foutf_hd=None
     else:
@@ -259,7 +310,7 @@ def StartCMD():
                                 print("REM skipping "+fileitem+'\n', file=Foutf_hd)
                             continue
                     progressbar_update('processing '+fileitem, cur_item*100/total_items)
-                    result=analyzer_core.vocal_analyze(fullpath, Ftmpdir, Fvl_str)
+                    result=analyzer_core.vocal_analyze(fullpath, Ftmpdir, Fvl_str, Fclip_start, Fclip_duration)
                     if result=='':
                         logarea.insert(tk.END, 'error on "'+fileitem+'"\n')
                     else:
@@ -322,7 +373,7 @@ ttk.Label(area_status, text="狀態 :").grid(column=0, row=0, sticky=tk.W)
 status_line_l=ttk.Label(area_status, text='idle')
 status_line_l.grid(column=1, row=0, sticky=tk.W)
 ttk.Label(area_status, text="進度 :").grid(column=0, row=1, sticky=tk.W)
-progress_b = ttk.Progressbar(area_status, orient='horizontal', length=300, mode='determinate')
+progress_b = ttk.Progressbar(area_status, orient='horizontal', length=540, mode='determinate')
 progress_b.grid(column=1, row=1)
 
 #######################################
@@ -365,6 +416,12 @@ def help_Box():
                  '  建議單音軌左聲道為人聲, 使用字串 _vL, 多重音軌第一軌人聲, 使用 _VL\n'+\
                  '  就可以用字串來辨別是單音軌或多音軌,\n'+\
                  '  若有特殊原因需要更改定義, 請自行勾選不同字串\n\n'+\
+                 '   +--------------+\n'+\
+                 '     分析區間設定  \n'+\
+                 '   +--------------+\n'+\
+                 '  人聲分離過程, 需要花很多時間, 因此只要分析歌曲其中一部分,\n'+\
+                 '  裏頭有包含人聲部分, 就可以正確判斷出人聲的音軌,\n'+\
+                 '  分析區間設定, 用來設定要拿歌曲那一個區間做分析\n\n'+\
                  '   +----------+\n'+\
                  '     輸出設定 \n'+\
                  '   +----------+\n'+\

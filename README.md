@@ -17,7 +17,7 @@
     
 安裝的方式有幾種 :
 1. 若在 Windows 7/10 的環境中,  
-  可以下載 [安裝包](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/releases/download/v1.0.0/vocal_ch_analyzer.zip)       
+  可以下載 [安裝包](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/releases/download/v1.1.0/vocal_ch_analyzer.zip)       
   解開 vocal_ch_analyzer.zip 之後, 執行裏頭的  
   **vocal_ch_analyzer.wsf** 檔案即可.  
   或者開啟命令視窗, 在解開的目錄中,  
@@ -44,6 +44,10 @@
 
 ***[人聲字串指定]*** : 指定判斷出人聲的聲道後, 要加到檔名後的辨識字串, 一般左聲道(第一音軌)是指定 _vL(_VL),   
                 右聲道(第二音軌)是指定 _vR(_VR), 若有其他原因, 請自行更改選項   
+                
+***[分析區間設定]*** : 人聲分離過程耗比較多時間, 實際上不需要分析整首歌, 只要分析一段有人聲部分的歌曲,  
+                應該就可以區分出人聲與伴唱音軌, 這個設定讓使用者自行指定要分析的歌曲區段, 以節省整體分析時間,  
+                若沒有節省時間的需求, 建議分析整首歌
                 
 ***[不處理已有_vL_vR檔案]***: 若檔名已經有 _vL 或 _vR 的識別字串, 就不再處理這檔案  
 

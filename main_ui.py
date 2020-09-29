@@ -4,6 +4,8 @@
 #  version : 1.0.0   2020/09/15
 #  version : 1.1.0   2020/09/16
 #            add feature to choose a clip for analysis to shorten required time
+#  version : 1.1.1   2020/09/23
+#            minor UI fixes
 #======================
 # imports
 #======================
@@ -18,8 +20,7 @@ from tkcalendar import Calendar, DateEntry
 from tkinter import filedialog as fd
 import os
 import sys
-from datetime import date
-import time
+from datetime import datetime
 import requests
 import dill
 import pandas as pd
@@ -28,8 +29,8 @@ import sqlite3
 import math
 import analyzer_core
 
-VERSION_INFO='1.0.0'
-DATE_INFO='2020/09/15'
+VERSION_INFO='1.1.1'
+DATE_INFO='2020/09/23'
 
 # define the file extension type to process
 ext_list = [".mpg", ".mpeg", ".vob", ".mkv", ".avi", ".dat"]
@@ -76,7 +77,7 @@ area_config.grid(column=0, row=0, padx=8, pady=4, sticky=tk.W)
 
 def getDirName():
     fDir = os.path.dirname(os.path.abspath('__file__'))
-    fName = fd.askdirectory(parent=win, title='choose stock data dir', initialdir=fDir)
+    fName = fd.askdirectory(parent=win, title='choose KTV source dir', initialdir=fDir)
     if fName :
         filedir.set(fName)
     
@@ -89,7 +90,7 @@ filedirEntry.grid(column=1, row=0, sticky=tk.W)
 
 def gettempDirName():
     fDir = os.path.dirname(os.path.abspath('__file__'))
-    fName = fd.askdirectory(parent=win, title='choose stock data dir', initialdir=fDir)
+    fName = fd.askdirectory(parent=win, title='choose temp file dir', initialdir=fDir)
     if fName :
         tempdir.set(fName)
     
@@ -194,42 +195,42 @@ area_output.grid(column=0, row=4, padx=8, pady=4, sticky=tk.W)
 
 
 SkipFileEn = tk.IntVar()
-SkipFilecb = tk.Checkbutton(area_output, text="不處理已有_vL_vR檔案", variable=SkipFileEn)
+SkipFilecb = tk.Checkbutton(area_output, text="略過已有_vL_vR檔案", variable=SkipFileEn)
 SkipFilecb.deselect()
 SkipFilecb.grid(column=0, row=0, sticky=tk.W)
 
-ModFileEn = tk.IntVar()
-checkbox = tk.Checkbutton(area_output, text="判斷的結果直接修改檔名", variable=ModFileEn)
-checkbox.deselect()
-checkbox.grid(column=0, row=1, sticky=tk.W)                     
+Output_Sel_strs=['純測試不輸出', '直接修改檔名', '輸出到BAT檔']
+OUTPUT_SEL_NONE=0
+OUTPUT_SEL_FILE=1
+OUTPUT_SEL_BAT=2
+
+def radOutput_Sel():
+    global output_sel_val
+    output_sel_val = Output_SelVar.get()
+
+ttk.Label(area_output, text="輸出選擇:").grid(column=0, row=1, sticky=tk.W)
+Output_SelVar=tk.IntVar()
+
+for col in range(3):
+    curRad = tk.Radiobutton(area_output, text=Output_Sel_strs[col], variable=Output_SelVar,
+                            value=col, command=radOutput_Sel, state='normal')
+    curRad.grid(column=1, row=1+col, sticky=tk.W)
+output_sel_val=0
+Output_SelVar.set(0)
 
 def getOutFileName():
     fDir = os.path.dirname(os.path.abspath('__file__'))
-    print("fdir=",fDir)
     fName = fd.asksaveasfilename(parent=win, title='指定BAT檔名', filetypes=(('BAT', '*.bat'), ('All Files', '*')), initialdir=fDir)
     if fName :
         outfilename.set(fName)
 
-outfilebtn=ttk.Button(area_output, text="判斷結果改輸出到BAT檔", command=getOutFileName)
-outfilebtn.grid(column=0, row=2, stick=tk.W)
+outfilebtn=ttk.Button(area_output, text="指定BAT檔", command=getOutFileName)
+outfilebtn.grid(column=0, row=4, stick=tk.W)
 outfilename = tk.StringVar()
 outfilename.set((os.path.dirname(os.path.abspath('__file__'))+'/result.bat').replace('\\', '/'))
 outfilenameLen=60
 outfilenameEntry = ttk.Entry(area_output, width=outfilenameLen, textvariable=outfilename)
-outfilenameEntry.grid(column=1, row=2, sticky=tk.W)
-
-# GUI Callback function 
-def checkCallback(*ignoredArgs):
-    # either modfileen or output file selection enabled
-    if ModFileEn.get(): 
-        outfilebtn.configure(state='disabled')
-        outfilenameEntry.configure(state='disabled')
-    else:             
-        outfilebtn.configure(state='normal')
-        outfilenameEntry.configure(state='normal')
-
-# trace the state of the two checkbuttons
-ModFileEn.trace('w', lambda unused0, unused1, unused2 : checkCallback())
+outfilenameEntry.grid(column=1, row=4, sticky=tk.W)
 
 #############################
 ### ------- tab2 output 
@@ -253,21 +254,20 @@ def StartCMD():
     stopbtn.configure(state='normal')
     pausebtn.configure(state='normal')
     # freeze the current setting, so the value will not be changed when UI changes
-    Fsrcdir=filedir.get()
-    Ftmpdir=tempdir.get()
+    Fsrcdir=filedir.get().replace('\\','/').rstrip('/')
+    Ftmpdir=tempdir.get().replace('\\','/').rstrip('/')
     Fbatfilename=outfilename.get()
     FSkipFileEn=SkipFileEn.get()
     Fvl_str=VL_STR[monoVar.get()+multiVar.get()*4]
-    FModFileEn=ModFileEn.get()
+    Foutput_sel=output_sel_val
     Fclip_start=clip_start_val
     Fclip_duration=clip_duration_val
-    if FModFileEn:
-        Foutf_hd=None
-    else:
+    if Foutput_sel==OUTPUT_SEL_BAT:     # if output selection is to BAT
         Foutf_hd=open(Fbatfilename, "wt", encoding="utf8")
         print("chcp 65001\n", file=Foutf_hd)
+    else:
+        Foutf_hd=None
         
-    #print(filedir.get(), tempdir.get(), outfilename.get(), SkipFileEn.get(), VL_STR[monoVar.get()+multiVar.get()*4])
     total_items=0
     logarea.delete('1.0', tk.END)   # clear text area
     # count the total files to process 
@@ -314,12 +314,15 @@ def StartCMD():
                     if result=='':
                         logarea.insert(tk.END, 'error on "'+fileitem+'"\n')
                     else:
-                        logarea.insert(tk.END, 'processed "'+fileitem+'" ='+result+'\n')
+                        now = datetime.now()
+                        current_time = now.strftime("%H:%M:%S")
+                        logarea.insert(tk.END, current_time+' processed "'+fileitem+'" => '+result+'\n')
                         newfilename=filename+result+fileext
-                        if Foutf_hd != None:   # output ren command to .bat file     
-                            print('ren "'+fullpath.replace('/','\\')+'" "'+newfilename+'"', file=Foutf_hd)
-                        else:    # directly change file name
-                            analyzer_core.rename_file(fullpath, newfilename)
+                        if Foutput_sel!=OUTPUT_SEL_NONE:    # if output is to file or BAT
+                            if Foutf_hd != None:       
+                                print('ren "'+fullpath.replace('/','\\')+'" "'+newfilename+'"', file=Foutf_hd)
+                            else:    # directly change file name
+                                analyzer_core.rename_file(fullpath, newfilename)
                 
     startbtn.configure(state='normal')
     stopbtn.configure(state='disabled')
@@ -359,7 +362,7 @@ stopbtn.configure(state='disabled')
 
 area_log = ttk.LabelFrame(tab2, text='結果')
 area_log.grid(column=0, row=1, padx=8, pady=4, sticky=tk.W)
-logarea = scrolledtext.ScrolledText(area_log,width=80,height=10)
+logarea = scrolledtext.ScrolledText(area_log,width=80,height=16)
 logarea.grid(column=0, row=0, sticky=tk.W)
 
 
@@ -401,37 +404,39 @@ def _msgBox():
     msg.showinfo('Vocal Channel Analyzer', '版本 :'+VERSION_INFO+'\n日期 :'+DATE_INFO+'\n')  
 
 def help_Box():
-    msg.showinfo('使用說明',\
-                 '   +----------+\n'+\
-                 '     環境設定 \n'+\
-                 '   +----------+\n'+\
+    msg.showinfo('環境設定說明',\
+                 '   ┌──────┐\n'+\
+                 '   │ 目錄設定 │\n'+\
+                 '   └──────┘\n'+\
                  '[來源目錄]: 指定待處理影片所在目錄\n'+\
                  '[暫存檔目錄]: 指定處理影片時,暫存檔使用的目錄\n'+\
                  '              若指定於 ramdisk, 建議要有 500MB 可使用空間\n\n'+\
-                 '   +--------------+\n'+\
-                 '     人聲字串指定  \n'+\
-                 '   +--------------+\n'+\
+                 '   ┌─────────┐\n'+\
+                 '   │ 人聲字串指定  │\n'+\
+                 '   └─────────┘\n'+\
                  '  針對單音軌(左右聲道)與多重音軌(第一第二音軌)\n'+\
                  '  偵測出人聲的聲道後,加入檔名的字串定義\n'+\
                  '  建議單音軌左聲道為人聲, 使用字串 _vL, 多重音軌第一軌人聲, 使用 _VL\n'+\
                  '  就可以用字串來辨別是單音軌或多音軌,\n'+\
                  '  若有特殊原因需要更改定義, 請自行勾選不同字串\n\n'+\
-                 '   +--------------+\n'+\
-                 '     分析區間設定  \n'+\
-                 '   +--------------+\n'+\
-                 '  人聲分離過程, 需要花很多時間, 因此只要分析歌曲其中一部分,\n'+\
+                 '   ┌─────────┐\n'+\
+                 '   │ 分析區間設定  │\n'+\
+                 '   └─────────┘\n'+\
+                 '  人聲分離過程, 需要花很多時間, 其實只要分析歌曲其中一部分,\n'+\
                  '  裏頭有包含人聲部分, 就可以正確判斷出人聲的音軌,\n'+\
                  '  分析區間設定, 用來設定要拿歌曲那一個區間做分析\n\n'+\
-                 '   +----------+\n'+\
-                 '     輸出設定 \n'+\
-                 '   +----------+\n'+\
-                 '[不處理已有_vL_vR檔案]: 若檔名已經有 _vL 或 _vR 的識別字串\n'+\
+                 '   ┌──────┐\n'+\
+                 '   │ 輸出設定 │\n'+\
+                 '   └──────┘\n'+\
+                 '[略過已有_vL_vR檔案]: 若檔名已經有 _vL 或 _vR 的識別字串\n'+\
                  '                        就不再處理這檔案\n'+\
-                 '[判斷的結果直接修改檔名]:若選擇此選項,處理後的結果會將_vL _vR 字串\n'+\
-                 '                        直接更新到檔案.\n'+\
-                 '[判斷結果改輸出到BAT檔案]:若上方選項不選,則可以指定一個 .bat 檔案,\n'+\
-                 '                        將所有更改檔名動作都輸出到此 .bat 檔,\n'+\
-                 '                        讓使用者再自行執行 .bat 檔案更改檔名\n')
+                 '[輸出選擇] : 選擇判斷結果的輸出,\n'+\
+                 '     [純測試不輸出]: 結果只輸出到狀態視窗, 不影響檔名\n'+\
+                 '     [直接修改檔名]: 將判斷結果的 _vL _vR 字串,直接更新到檔名.\n'+\
+                 '     [輸出到BAT檔] : 將修改檔名的動作改存到 .bat 檔案,\n'+\
+                 '                     讓使用者再自行執行 .bat 檔案更改檔名\n'+\
+                 '[指定BAT檔] : 設定 .bat 檔的檔名, 若上方選擇 [輸出到BAT檔]\n'+\
+                 '              就會將結果輸出到此指定的 BAT 檔中\n' )
                  
 # Add another Menu to the Menu Bar and an item
 help_menu = Menu(menu_bar, tearoff=0)

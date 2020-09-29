@@ -17,7 +17,7 @@
     
 安裝的方式有幾種 :
 1. 若在 Windows 7/10 的環境中,  
-  可以下載 [安裝包](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/releases/download/v1.1.0/vocal_ch_analyzer.zip)       
+  可以下載 [安裝包](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/releases/download/v1.1.1/vocal_ch_analyzer.zip)       
   解開 vocal_ch_analyzer.zip 之後, 執行裏頭的  
   **vocal_ch_analyzer.wsf** 檔案即可.  
   或者開啟命令視窗, 在解開的目錄中,  
@@ -51,12 +51,12 @@
 ***[分析區間設定]*** : 人聲分離過程耗比較多時間, 實際上不需要分析整首歌, 只要分析一段有人聲部分的歌曲,  
                 應該就可以區分出人聲與伴唱音軌, 這個設定讓使用者自行指定要分析的歌曲區段, 以節省整體分析時間,  
                 若沒有節省時間的需求, 建議分析整首歌
-                
-***[不處理已有_vL_vR檔案]***: 若檔名已經有 _vL 或 _vR 的識別字串, 就不再處理這檔案  
 
-分析人聲過的結果, 可以將 _vL, _vR 的字串  
-- 直接修改到硬碟上的檔名,   
-- 將改檔名的動作,儲存到一個 .bat 的批次檔, 讓使用者先審閱過之後, 再自行開個命令視窗, 執行 .bat 檔案  
+***[不處理已有_vL_vR檔案]***: 若檔名已經有 _vL 或 _vR 的識別字串, 就不再處理這檔案  
+***[輸出選擇]*** : 分析完的 _vL, _vR 字串結果, 可以選擇輸出到 :
+ - 只做分析, 分析結果可看輸出中的*結果*視窗, 不影響檔名或輸出到 .BAT 檔案
+ - 直接將結果的 _vL, _vR 字串加到歌曲檔名的最後
+ - 將改檔名的動作,儲存到一個 .BAT 的批次檔, 讓使用者先審閱過之後, 再自行開個命令視窗, 執行 .BAT 檔案  
 
 啟動分析的畫面如下 :
 ![image](https://github.com/ericpeng1968/Vocal-Channel-Analyzer/blob/master/screenshot-2.png)
@@ -81,7 +81,7 @@
     1. 下載 portable python 3.7 (https://sourceforge.net/projects/portable-python/)
     2. 解壓後, 執行 Console-Launcher.exe 來安裝需要的模組
     3. 在 console 畫面中執行 "python -m pip install --upgrade pip" 更新 pip
-    4. 接著執行 "python -m pip install spleeter" 安裝 spleeter
+    4. 接著執行 "python -m pip install spleeter" 安裝 spleeter(若需要 GPU 支援,請裝 spleeter-gpu)
     5. 到 App 目錄下, copy mediainfo.exe, ffmpeg.exe, ffprobe.exe 這三個執行檔到此目錄
         mediainfo 從 https://mediaarea.net/en/MediaInfo/Download/Windows 下載 CLI 版本
         ffmpeg/ffprobe 從  https://ffmpeg.org/download.html 下載 windows 版本
@@ -91,7 +91,7 @@
 如果是在比較舊的 CPU(Intel Sandybridge 之前的版本),沒有 AVX support, 跑起來會有錯誤.  
 需要再找只有 SSE support 的 tensorflow 版本, 取代掉  
 Python/Libs/site-packages 下 tensor 開頭的幾個目錄,  
-若是有顯示卡加速, 也可以安裝支援 GPU 版本的 tensorflow, 應該可以加速許多  
+若是有顯示卡加速, 也可以安裝支援 spleeter-gpu 版本, 應該可以加速許多  
 
 可以到 https://github.com/fo40225/tensorflow-windows-wheel 其他版本的 tensorflow,  
 基本上使用 Spleeter 需要用比較快的 CPU 與較大的記憶體(最好有 8GB)
@@ -102,12 +102,12 @@ Python/Libs/site-packages 下 tensor 開頭的幾個目錄,
 ---------------------------------------
 ##### 理論與方法 :
 
-    古早以前, 會利用 KTV 檔案中的左右聲道或第一第二音軌的 replaygain 或音量 RMS,
-    來判斷人聲的音軌. 因為如果照理論來講 :
+    以理想狀況來講 :
        伴唱的音軌 = 伴唱的音量 + 和聲的音量
        人聲的音軌 = 伴唱的音量 + 和聲的音量 + 主唱的音量
     所以有人聲的音軌, 總"能量"要比伴唱的音軌還高, 用兩音軌的 replaygain(RMS)
     來比較大小, 應該就可以分辨出人聲/伴唱音軌.
+    
     但是現實狀況並非如此, 用此方法的錯誤率滿高的, 原因就是在檔案中的音軌,
     實際上音量並非都是一致的, 有可能伴唱音軌的伴唱音量比人聲音軌的伴唱音量高,  
     用 replaygain(RMS) 來判斷, 誤判情況滿多的
@@ -133,5 +133,11 @@ Python/Libs/site-packages 下 tensor 開頭的幾個目錄,
     這種情況挑任一邊當人聲或伴奏都沒差別.  
     目前的程式沒打算將這種情況另外判斷出來, 但應該有機會可以判斷出.
     
+    ----------------------
+    #### 後記 :
+    本程式只是將我在使用中的程式整理出來, 希望可以幫助到有些需要此功能的同好.  
+    我學習 Python 的期間不長, 目前程度大概只是用來取代其他 script language,  
+    並沒有充分的利用 Python 的特性. 歡迎有興趣的朋友將程式的 idea 改 implement  
+    在其他的語言與程式中, 讓大家有更多方便的 tools 來使用.
     
        

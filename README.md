@@ -84,10 +84,14 @@
     2. 解壓後, 執行 Console-Launcher.exe 來安裝需要的模組
     3. 在 console 畫面中執行 "python -m pip install --upgrade pip" 更新 pip
     4. 接著執行 "python -m pip install spleeter" 安裝 spleeter(若需要 GPU 支援,請裝 spleeter-gpu)
+       然後還需要安裝 dill 與 tkcalendar
     5. 到 App 目錄下, copy mediainfo.exe, ffmpeg.exe, ffprobe.exe 這三個執行檔到此目錄
         mediainfo 從 https://mediaarea.net/en/MediaInfo/Download/Windows 下載 CLI 版本
         ffmpeg/ffprobe 從  https://ffmpeg.org/download.html 下載 windows 版本
     6. 從本計畫中 copy main_ui.py, vocal_ch_analyzer.py 到 App 目錄下
+    7. 如果執行時, tensorflow 失敗, 無法載到 msvcp140.dll, 或 msvcp140_1.dll,
+       請到網站下載 MS Visual C++ library, 挑選 x86 or x64 版本(看安裝的 python 版本)
+       https://support.microsoft.com/zh-tw/help/2977003/the-latest-supported-visual-c-downloads
 
 目前安裝包裏頭, 安裝的是支援 AVX 版本的 tensorflow,  
 如果是在比較舊的 CPU(Intel Sandybridge 之前的版本),沒有 AVX support, 跑起來會有錯誤.  
